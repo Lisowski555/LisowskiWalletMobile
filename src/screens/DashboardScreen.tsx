@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, ScrollView, StyleSheet, Modal } from 'react-native';
-import { fetchWallet } from '../api/walletApi';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, Button, ScrollView, StyleSheet, Alert } from 'react-native';
+import { fetchWallet, addSavingsAccount, addSavingsDeposit } from '../api/walletApi';
 import type { SavingsWallet } from '../types/Wallet';
 import SavingsAccountCard from '../components/SavingsAccountCard';
 import SavingsDepositCard from '../components/SavingsDepositCard';
@@ -18,15 +18,46 @@ export default function DashboardScreen({ token }: Props) {
     const [showAccountModal, setShowAccountModal] = useState(false);
     const [showDepositModal, setShowDepositModal] = useState(false);
 
-    useEffect(() => {
-        const loadWallet = async () => {
-            setLoading(true);
+    // Fetch wallet from backend
+    const loadWallet = useCallback(async () => {
+        setLoading(true);
+        try {
             const data = await fetchWallet(token);
             setWallet(data);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to fetch wallet');
+        } finally {
             setLoading(false);
-        };
-        loadWallet();
+        }
     }, [token]);
+
+    useEffect(() => {
+        loadWallet();
+    }, [loadWallet]);
+
+    // Add new savings account
+    const handleAddAccount = async (account: { title: string; rate: number; amount: number }) => {
+        const now = new Date().toISOString();
+        await addSavingsAccount(token, {
+            ...account,
+            created: now,
+            updated: now,
+        });
+        setShowAccountModal(false);
+        await loadWallet();
+    };
+
+    // Add new savings deposit
+    const handleAddDeposit = async (deposit: { title: string; endDate: string; rate: number; amount: number }) => {
+        const now = new Date().toISOString();
+        await addSavingsDeposit(token, {
+            ...deposit,
+            created: now,
+            updated: now,
+        });
+        setShowDepositModal(false);
+        await loadWallet();
+    };
 
     if (loading) return <Text style={styles.loading}>Loading...</Text>;
     if (!wallet) return <Text style={styles.error}>No wallet data found!</Text>;
@@ -55,14 +86,12 @@ export default function DashboardScreen({ token }: Props) {
             <AddAccountModal
                 visible={showAccountModal}
                 onClose={() => setShowAccountModal(false)}
-                onSave={() => setShowAccountModal(false)} //* implementacja dodania konta */ }
-                // token={token}
+                onSave={handleAddAccount}
             />
             <AddDepositModal
                 visible={showDepositModal}
                 onClose={() => setShowDepositModal(false)}
-                onSave={() => setShowDepositModal(false)}/* implementacja dodania lokaty */
-                // token={token}
+                onSave={handleAddDeposit}
             />
         </ScrollView>
     );
