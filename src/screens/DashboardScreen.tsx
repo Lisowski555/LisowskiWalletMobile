@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Button, ScrollView, StyleSheet, Alert } from 'react-native';
-import { fetchWallet, addSavingsAccount, addSavingsDeposit } from '../api/walletApi';
-import type { SavingsWallet } from '../types/Wallet';
+import React, {useEffect, useState, useCallback} from 'react';
+import {View, Text, Button, ScrollView, StyleSheet, Alert} from 'react-native';
+import {fetchWallet, addSavingsAccount, addSavingsDeposit} from '../api/walletApi';
+import type {SavingsWallet} from '../types/Wallet';
 import SavingsAccountCard from '../components/SavingsAccountCard';
 import SavingsDepositCard from '../components/SavingsDepositCard';
 import TotalBalance from '../components/TotalBalance';
@@ -12,7 +12,7 @@ type Props = {
     token: string;
 };
 
-export default function DashboardScreen({ token }: Props) {
+export default function DashboardScreen({token}: Props) {
     const [wallet, setWallet] = useState<SavingsWallet | null>(null);
     const [loading, setLoading] = useState(true);
     const [showAccountModal, setShowAccountModal] = useState(false);
@@ -32,31 +32,38 @@ export default function DashboardScreen({ token }: Props) {
     }, [token]);
 
     useEffect(() => {
-        loadWallet();
+        const fetch = async () => {
+            await loadWallet();
+        };
+        fetch();
     }, [loadWallet]);
 
     // Add new savings account
     const handleAddAccount = async (account: { title: string; rate: number; amount: number }) => {
-        const now = new Date().toISOString();
-        await addSavingsAccount(token, {
-            ...account,
-            created: now,
-            updated: now,
-        });
-        setShowAccountModal(false);
-        await loadWallet();
+        try {
+            const updatedWallet = await addSavingsAccount(token, {
+                ...account,
+                rate: account.rate > 1 ? account.rate / 100 : account.rate
+            });
+            setWallet(updatedWallet);
+            setShowAccountModal(false);
+        } catch (err) {
+            Alert.alert('Error', 'Failed to add account');
+        }
     };
 
     // Add new savings deposit
     const handleAddDeposit = async (deposit: { title: string; endDate: string; rate: number; amount: number }) => {
-        const now = new Date().toISOString();
-        await addSavingsDeposit(token, {
-            ...deposit,
-            created: now,
-            updated: now,
-        });
-        setShowDepositModal(false);
-        await loadWallet();
+        try {
+            const updatedWallet = await addSavingsDeposit(token, {
+                ...deposit,
+                rate: deposit.rate > 1 ? deposit.rate / 100 : deposit.rate
+            });
+            setWallet(updatedWallet);
+            setShowDepositModal(false);
+        } catch (err) {
+            Alert.alert('Error', 'Failed to add deposit');
+        }
     };
 
     if (loading) return <Text style={styles.loading}>Loading...</Text>;
@@ -65,22 +72,25 @@ export default function DashboardScreen({ token }: Props) {
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Dashboard</Text>
-            <TotalBalance wallet={wallet} />
+            <TotalBalance wallet={wallet}/>
 
             <View>
                 <Text style={styles.sectionTitle}>Savings Accounts</Text>
                 {wallet.savingsAccounts.map(acc => (
                     <SavingsAccountCard key={acc.id} account={acc} />
+                    // <View key={acc.id}>
+                    //     <Text> {acc.amount.amount} </Text>
+                    // </View>
                 ))}
-                <Button title="➕ Add Account" onPress={() => setShowAccountModal(true)} />
+                <Button title="➕ Add Account" onPress={() => setShowAccountModal(true)}/>
             </View>
 
             <View>
                 <Text style={styles.sectionTitle}>Savings Deposits</Text>
                 {wallet.savingsDeposits.map(dep => (
-                    <SavingsDepositCard key={dep.id} deposit={dep} />
+                    <SavingsDepositCard key={dep.id} deposit={dep}/>
                 ))}
-                <Button title="➕ Add Deposit" onPress={() => setShowDepositModal(true)} />
+                <Button title="➕ Add Deposit" onPress={() => setShowDepositModal(true)}/>
             </View>
 
             <AddAccountModal
@@ -98,9 +108,9 @@ export default function DashboardScreen({ token }: Props) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16, backgroundColor: '#F7F7F2' },
-    title: { fontSize: 28, fontWeight: 'bold', marginBottom: 16 },
-    sectionTitle: { fontSize: 20, fontWeight: 'bold', marginVertical: 8 },
-    loading: { fontSize: 18, textAlign: 'center', marginTop: 40 },
-    error: { color: 'red', fontSize: 18, textAlign: 'center', marginTop: 40 }
+    container: {flex: 1, padding: 16, backgroundColor: '#F7F7F2'},
+    title: {fontSize: 28, fontWeight: 'bold', marginBottom: 16},
+    sectionTitle: {fontSize: 20, fontWeight: 'bold', marginVertical: 8},
+    loading: {fontSize: 18, textAlign: 'center', marginTop: 40},
+    error: {color: 'red', fontSize: 18, textAlign: 'center', marginTop: 40}
 });

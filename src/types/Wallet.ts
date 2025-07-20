@@ -5,6 +5,7 @@ export interface Money {
 
 export interface SavingsAccount {
     id: string;
+    title: string;
     amount: Money;
     rate: number;
     created: string;
