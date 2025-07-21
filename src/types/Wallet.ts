@@ -14,6 +14,7 @@ export interface SavingsAccount {
 
 export interface SavingsDeposit {
     id: string;
+    title: string;
     amount: Money;
     rate: number;
     endDate: string;
