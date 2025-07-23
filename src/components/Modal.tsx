@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import {Modal, View, StyleSheet, TouchableWithoutFeedback} from 'react-native';
 
 type Props = {
     visible: boolean;
@@ -7,7 +7,7 @@ type Props = {
     children: React.ReactNode;
 };
 
-export default function CustomModal({ visible, onClose, children }: Props) {
+export default function CustomModal({visible, onClose, children}: Props) {
     return (
         <Modal
             visible={visible}

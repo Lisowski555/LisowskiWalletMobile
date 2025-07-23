@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import type { SavingsWallet } from '../types/Wallet';
+import {View, Text, StyleSheet} from 'react-native';
+import type {SavingsWallet} from '../types/Wallet';
 
-export default function TotalBalance({ wallet }: { wallet: SavingsWallet }) {
+export default function TotalBalance({wallet}: { wallet: SavingsWallet }) {
     const total = [
         ...wallet.savingsAccounts.map(a => a.amount.amount),
         ...wallet.savingsDeposits.map(d => d.amount.amount),
@@ -17,7 +17,7 @@ export default function TotalBalance({ wallet }: { wallet: SavingsWallet }) {
 }
 
 const styles = StyleSheet.create({
-    container: { marginVertical: 16, padding: 16, backgroundColor: '#A66FB5', borderRadius: 8 },
-    label: { fontSize: 18, color: '#fff' },
-    amount: { fontSize: 24, fontWeight: 'bold', color: '#fff' }
+    container: {marginVertical: 16, padding: 16, backgroundColor: '#A66FB5', borderRadius: 8},
+    label: {fontSize: 18, color: '#fff'},
+    amount: {fontSize: 24, fontWeight: 'bold', color: '#fff'}
 });
